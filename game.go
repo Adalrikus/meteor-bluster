@@ -1,10 +1,12 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/text/v2"
 )
 
 const (
@@ -16,6 +18,7 @@ const (
 
 type Game struct {
 	player           *Player
+	score            int
 	meteorSpawnTimer *Timer
 	meteors          []*Meteor
 	bullets          []*Bullet
@@ -55,6 +58,7 @@ func (g *Game) Update() error {
 			if m.Collider().Intersects(b.Collider()) {
 				g.meteors = append(g.meteors[:i], g.meteors[i+1:]...)
 				g.bullets = append(g.bullets[:j], g.bullets[j+1:]...)
+				g.score++
 			}
 		}
 	}
@@ -79,6 +83,13 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	for _, b := range g.bullets {
 		b.Draw(screen)
 	}
+
+	text.Draw(screen, fmt.Sprintf("%06d", g.score), ScoreFont, &text.DrawOptions{
+		LayoutOptions: text.LayoutOptions{
+			PrimaryAlign:   text.AlignCenter,
+			SecondaryAlign: text.AlignStart,
+		},
+	})
 }
 
 func (g *Game) AddBullet(b *Bullet) {
@@ -89,6 +100,8 @@ func (g *Game) Reset() {
 	g.player = NewPlayer(g)
 	g.meteors = nil
 	g.bullets = nil
+	g.score = 0
+	g.meteorSpawnTimer.Reset()
 	log.Println("Game over.")
 }
 
