@@ -2,17 +2,20 @@ package main
 
 import (
 	"math"
+	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
 type Player struct {
-	sprite   *ebiten.Image
-	position Vector
-	rotation float64
+	game          *Game
+	shootCooldown *Timer
+	sprite        *ebiten.Image
+	position      Vector
+	rotation      float64
 }
 
-func NewPlayer() *Player {
+func NewPlayer(g *Game) *Player {
 	sprite := PlayerSprite
 
 	bounds := sprite.Bounds()
@@ -20,6 +23,8 @@ func NewPlayer() *Player {
 	halfH := float64(bounds.Dy()) / 2
 
 	return &Player{
+		game:          g,
+		shootCooldown: NewTimer(time.Millisecond),
 		position: Vector{
 			X: ScreenWidth/2 - halfW,
 			Y: ScreenHeight/2 - halfH,
@@ -46,6 +51,24 @@ func (p *Player) Update() error {
 	}
 	if ebiten.IsKeyPressed(ebiten.KeyH) {
 		p.rotation -= rotationalSpeed
+	}
+
+	p.shootCooldown.Update()
+	if p.shootCooldown.IsReady() && ebiten.IsKeyPressed(ebiten.KeySpace) {
+		p.shootCooldown.Reset()
+		bulletSpawnOffset := 50.0
+
+		bounds := p.sprite.Bounds()
+		halfW := float64(bounds.Dx()) / 2
+		halfH := float64(bounds.Dy()) / 2
+
+		spawnPos := Vector{
+			X: p.position.X + halfW + math.Sin(p.rotation)*bulletSpawnOffset,
+			Y: p.position.Y + halfH + math.Cos(p.rotation)*-bulletSpawnOffset,
+		}
+
+		bullet := NewBullet(spawnPos, p.rotation)
+		p.game.AddBullet(bullet)
 	}
 
 	p.position.X += delta.X
