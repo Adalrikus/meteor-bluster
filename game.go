@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"time"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -49,6 +50,22 @@ func (g *Game) Update() error {
 		b.Update()
 	}
 
+	for i, m := range g.meteors {
+		for j, b := range g.bullets {
+			if m.Collider().Intersects(b.Collider()) {
+				g.meteors = append(g.meteors[:i], g.meteors[i+1:]...)
+				g.bullets = append(g.bullets[:j], g.bullets[j+1:]...)
+			}
+		}
+	}
+
+	for _, m := range g.meteors {
+		if m.Collider().Intersects(g.player.Collider()) {
+			g.Reset()
+			break
+		}
+	}
+
 	return nil
 }
 
@@ -66,6 +83,13 @@ func (g *Game) Draw(screen *ebiten.Image) {
 
 func (g *Game) AddBullet(b *Bullet) {
 	g.bullets = append(g.bullets, b)
+}
+
+func (g *Game) Reset() {
+	g.player = NewPlayer(g)
+	g.meteors = nil
+	g.bullets = nil
+	log.Println("Game over.")
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {

@@ -91,3 +91,14 @@ func (p *Player) Draw(screen *ebiten.Image) {
 
 	screen.DrawImage(p.sprite, op)
 }
+
+func (p *Player) Collider() Rect {
+	bounds := p.sprite.Bounds()
+
+	return Rect{
+		X:      p.position.X,
+		Y:      p.position.Y,
+		Width:  float64(bounds.Dx()),
+		Height: float64(bounds.Dy()),
+	}
+}
