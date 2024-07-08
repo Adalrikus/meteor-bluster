@@ -25,12 +25,13 @@ func mustLoadImage(name string) *ebiten.Image {
 	}
 	defer f.Close()
 
+	log.Printf("Loading sprite: %s\n", name)
 	img, _, err := image.Decode(f)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	log.Println("Assets loaded.")
+	log.Println("Asset loaded.")
 
 	return ebiten.NewImageFromImage(img)
 }
@@ -41,24 +42,10 @@ func mustLoadImages(name string) []*ebiten.Image {
 		log.Fatal(err)
 	}
 
-	var images []*ebiten.Image
-	for _, file := range files {
-		log.Printf("Loading sprite: %s\n", file.Name())
-		content, err := assets.Open(name + "/" + file.Name())
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		img, _, err := image.Decode(content)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		image := ebiten.NewImageFromImage(img)
-		images = append(images, image)
+	images := make([]*ebiten.Image, len(files))
+	for i, file := range files {
+		images[i] = mustLoadImage(name + "/" + file.Name())
 	}
-
-	log.Println("Assets loaded.")
 
 	return images
 }
